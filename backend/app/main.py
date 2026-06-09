@@ -5,7 +5,13 @@ from typing import List, Optional
 from app import models, schemas, crud, database, analyzer
 
 # Auto-create tables on startup (perfect for zero-setup demo!)
-models.Base.metadata.create_all(bind=database.engine)
+try:
+    models.Base.metadata.create_all(bind=database.engine)
+    print("Database tables created/verified successfully.")
+except Exception as e:
+    import sys
+    print(f"Error creating database tables at startup: {e}", file=sys.stderr)
+
 
 app = FastAPI(title="Sira AI MVP API Platform", version="1.0.0")
 
@@ -21,6 +27,57 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return {"status": "healthy", "service": "Sira AI API"}
+
+@app.get("/api/debug")
+def debug_info():
+    import traceback
+    import sys
+    import os
+    from sqlalchemy import text
+    
+    db_info = "Not configured"
+    db_conn_status = "Not tested"
+    db_error = None
+    
+    try:
+        from app.database import db_url
+        if db_url:
+            # Simple manual mask to avoid credentials leak
+            if "@" in db_url:
+                parts = db_url.split("@")
+                prefix = parts[0]
+                suffix = parts[-1]
+                if "://" in prefix:
+                    proto, credentials = prefix.split("://", 1)
+                    if ":" in credentials:
+                        user, _ = credentials.split(":", 1)
+                        masked_credentials = f"{user}:****"
+                    else:
+                        masked_credentials = "****"
+                    db_info = f"{proto}://{masked_credentials}@{suffix}"
+                else:
+                    db_info = f"****@{suffix}"
+            else:
+                db_info = db_url
+            
+            # Try connecting
+            with database.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            db_conn_status = "Connected successfully"
+        else:
+            db_conn_status = "No DB URL"
+    except Exception as e:
+        db_conn_status = "Failed"
+        db_error = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
+        
+    return {
+        "python_version": sys.version,
+        "database_url_masked": db_info,
+        "database_connection_status": db_conn_status,
+        "database_error": db_error,
+        "env_keys": list(os.environ.keys())
+    }
+
 
 @app.post("/api/ingest", response_model=dict)
 def ingest_traces(payload: List[schemas.IngestRunPayload], db: Session = Depends(database.get_db)):
