@@ -395,12 +395,12 @@ export default function Home() {
   const compVersions = versions.filter(v => v.agent_id === Number(compAgentId));
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-zinc-900 font-sans flex antialiased">
-      {/* Sidebar Navigation - Sleek Minimalist contrast */}
-      <aside className="w-64 border-r border-zinc-200 bg-white flex flex-col p-6 sticky top-0 h-screen shrink-0">
+    <div className="min-h-screen bg-[#fafafa] text-zinc-900 font-sans flex flex-col lg:flex-row antialiased">
+      {/* Sidebar/Top Navigation - Responsive & Sleek Minimalist contrast */}
+      <aside className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white flex flex-col sm:flex-row lg:flex-col p-5 lg:p-6 sticky top-0 lg:h-screen shrink-0 z-50 shadow-sm lg:shadow-none items-center sm:justify-between lg:justify-start lg:items-stretch gap-4 sm:gap-0 lg:gap-0">
         
         {/* Sira Brand Logo Image */}
-        <div className="mb-10 w-32 h-10 overflow-hidden relative flex items-center justify-center">
+        <div className="w-28 h-9 overflow-hidden relative flex items-center justify-center shrink-0">
           <img 
             src="/logo.png" 
             alt="Sira AI Logo" 
@@ -408,10 +408,10 @@ export default function Home() {
           />
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="flex flex-row lg:flex-col gap-1 w-full sm:w-auto lg:w-full overflow-x-auto lg:overflow-visible pb-1 sm:pb-0 lg:pb-0 justify-center sm:justify-end lg:justify-start lg:mt-6">
           <button 
             onClick={() => setActiveTab("dashboard")}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+            className={`flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-150 shrink-0 ${
               activeTab === "dashboard" 
                 ? "bg-zinc-100 text-zinc-900" 
                 : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
@@ -429,7 +429,7 @@ export default function Home() {
                 setCompVersionB(versions[1].id.toString());
               }
             }}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+            className={`flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-150 shrink-0 ${
               activeTab === "compare" 
                 ? "bg-zinc-100 text-zinc-900" 
                 : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
@@ -441,7 +441,7 @@ export default function Home() {
 
           <button 
             onClick={() => setActiveTab("ingest")}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+            className={`flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-150 shrink-0 ${
               activeTab === "ingest" 
                 ? "bg-zinc-100 text-zinc-900" 
                 : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
@@ -453,7 +453,7 @@ export default function Home() {
         </nav>
 
         {/* Workspace Footer Info */}
-        <div className="border-t border-zinc-200 pt-5 mt-auto">
+        <div className="hidden lg:block border-t border-zinc-200 pt-5 mt-auto">
           <div className="bg-zinc-50 rounded-lg p-3 border border-zinc-200/60 flex items-center justify-between">
             <div>
               <span className="block text-[10px] font-bold text-zinc-800 uppercase tracking-wider">Sira Platform</span>
@@ -465,9 +465,9 @@ export default function Home() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 p-8 flex flex-col">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 flex flex-col">
         {/* Header */}
-        <header className="flex justify-between items-center mb-8 pb-6 border-b border-zinc-200">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-8 pb-6 border-b border-zinc-200">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-zinc-950">
               {activeTab === "dashboard" && "Runs Explorer & Observability"}
@@ -501,7 +501,7 @@ export default function Home() {
         {activeTab === "dashboard" && (
           <div className="flex-1 space-y-6">
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div className="bg-white border border-zinc-200/80 rounded-xl p-5 shadow-sm hover:shadow hover:-translate-y-0.5 hover:border-zinc-350 transition-all duration-300 relative overflow-hidden group">
                 <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">
                   Total Active Runs
@@ -910,7 +910,7 @@ export default function Home() {
           <div className="flex-1 space-y-6">
             {/* Compare Version Inputs */}
             <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                 <div>
                   <label className="block text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-1.5">Select Agent</label>
                   <div className="relative">
@@ -1005,7 +1005,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Success Rate Comparison */}
                     <div className="bg-zinc-50 rounded-xl p-5 border border-zinc-200 flex flex-col justify-between">
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mb-2.5">
