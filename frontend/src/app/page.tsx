@@ -1011,25 +1011,29 @@ export default function Home() {
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mb-2.5">
                         Success Rate
                       </span>
-                      <div className="flex justify-between items-baseline mb-2.5">
-                        <div>
-                          <span className="text-[9px] text-zinc-450 uppercase font-bold block">{comparisonResult.version_a}</span>
-                          <span className="text-2xl font-black text-zinc-800">{comparisonResult.summary_a.success_rate}%</span>
+                      <div className="flex justify-between items-center gap-2 mb-2.5">
+                        <div className="min-w-0">
+                          <span className="text-[9px] text-zinc-450 uppercase font-bold block truncate">{comparisonResult.version_a}</span>
+                          <span className="text-xl sm:text-2xl font-black text-zinc-800 whitespace-nowrap">
+                            {typeof comparisonResult.summary_a.success_rate === 'number' ? comparisonResult.summary_a.success_rate.toFixed(1) : comparisonResult.summary_a.success_rate}%
+                          </span>
                         </div>
-                        <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
-                        <div className="text-right">
-                          <span className="text-[9px] text-zinc-450 uppercase font-bold block">{comparisonResult.version_b}</span>
-                          <span className="text-2xl font-black text-emerald-600">{comparisonResult.summary_b.success_rate}%</span>
+                        <ArrowRight className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                        <div className="text-right min-w-0">
+                          <span className="text-[9px] text-zinc-450 uppercase font-bold block truncate">{comparisonResult.version_b}</span>
+                          <span className="text-xl sm:text-2xl font-black text-emerald-600 whitespace-nowrap">
+                            {typeof comparisonResult.summary_b.success_rate === 'number' ? comparisonResult.summary_b.success_rate.toFixed(1) : comparisonResult.summary_b.success_rate}%
+                          </span>
                         </div>
                       </div>
                       
                       {comparisonResult.summary_b.success_rate - comparisonResult.summary_a.success_rate >= 0 ? (
-                        <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit">
+                        <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit shrink-0">
                           <TrendingUp className="h-3 w-3" />
                           +{(comparisonResult.summary_b.success_rate - comparisonResult.summary_a.success_rate).toFixed(1)}% improvement
                         </div>
                       ) : (
-                        <div className="text-[10px] text-rose-700 font-extrabold flex items-center gap-1 mt-1 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 w-fit">
+                        <div className="text-[10px] text-rose-700 font-extrabold flex items-center gap-1 mt-1 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 w-fit shrink-0">
                           <TrendingDown className="h-3 w-3" />
                           {(comparisonResult.summary_b.success_rate - comparisonResult.summary_a.success_rate).toFixed(1)}% regression
                         </div>
@@ -1041,25 +1045,29 @@ export default function Home() {
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mb-2.5">
                         Avg Latency
                       </span>
-                      <div className="flex justify-between items-baseline mb-2.5">
-                        <div>
-                          <span className="text-[9px] text-zinc-450 uppercase font-bold block">{comparisonResult.version_a}</span>
-                          <span className="text-2xl font-black text-zinc-800">{comparisonResult.summary_a.avg_latency} <span className="text-[10px] font-bold text-zinc-400">ms</span></span>
+                      <div className="flex justify-between items-center gap-2 mb-2.5">
+                        <div className="min-w-0">
+                          <span className="text-[9px] text-zinc-450 uppercase font-bold block truncate">{comparisonResult.version_a}</span>
+                          <span className="text-xl sm:text-2xl font-black text-zinc-800 whitespace-nowrap">
+                            {Math.round(comparisonResult.summary_a.avg_latency)} <span className="text-[10px] font-bold text-zinc-400">ms</span>
+                          </span>
                         </div>
-                        <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
-                        <div className="text-right">
-                          <span className="text-[9px] text-zinc-450 uppercase font-bold block">{comparisonResult.version_b}</span>
-                          <span className="text-2xl font-black text-zinc-800">{comparisonResult.summary_b.avg_latency} <span className="text-[10px] font-bold text-zinc-400">ms</span></span>
+                        <ArrowRight className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                        <div className="text-right min-w-0">
+                          <span className="text-[9px] text-zinc-450 uppercase font-bold block truncate">{comparisonResult.version_b}</span>
+                          <span className="text-xl sm:text-2xl font-black text-zinc-800 whitespace-nowrap">
+                            {Math.round(comparisonResult.summary_b.avg_latency)} <span className="text-[10px] font-bold text-zinc-400">ms</span>
+                          </span>
                         </div>
                       </div>
 
                       {comparisonResult.summary_b.avg_latency - comparisonResult.summary_a.avg_latency <= 0 ? (
-                        <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit">
+                        <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit shrink-0">
                           <TrendingUp className="h-3 w-3" />
                           -{Math.round(comparisonResult.summary_a.avg_latency - comparisonResult.summary_b.avg_latency)}ms faster
                         </div>
                       ) : (
-                        <div className="text-[10px] text-amber-700 font-extrabold flex items-center gap-1 mt-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
+                        <div className="text-[10px] text-amber-700 font-extrabold flex items-center gap-1 mt-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit shrink-0">
                           <TrendingDown className="h-3 w-3" />
                           +{Math.round(comparisonResult.summary_b.avg_latency - comparisonResult.summary_a.avg_latency)}ms slower
                         </div>
@@ -1071,25 +1079,29 @@ export default function Home() {
                       <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mb-2.5">
                         Avg Cost
                       </span>
-                      <div className="flex justify-between items-baseline mb-2.5">
-                        <div>
-                          <span className="text-[9px] text-zinc-450 uppercase font-bold block">{comparisonResult.version_a}</span>
-                          <span className="text-2xl font-black text-zinc-800">{comparisonResult.summary_a.avg_cost} <span className="text-[10px] font-bold text-zinc-400">¢</span></span>
+                      <div className="flex justify-between items-center gap-2 mb-2.5">
+                        <div className="min-w-0">
+                          <span className="text-[9px] text-zinc-450 uppercase font-bold block truncate">{comparisonResult.version_a}</span>
+                          <span className="text-xl sm:text-2xl font-black text-zinc-800 whitespace-nowrap">
+                            {typeof comparisonResult.summary_a.avg_cost === 'number' ? comparisonResult.summary_a.avg_cost.toFixed(3) : comparisonResult.summary_a.avg_cost} <span className="text-[10px] font-bold text-zinc-400">¢</span>
+                          </span>
                         </div>
-                        <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
-                        <div className="text-right">
-                          <span className="text-[9px] text-zinc-450 uppercase font-bold block">{comparisonResult.version_b}</span>
-                          <span className="text-2xl font-black text-zinc-800">{comparisonResult.summary_b.avg_cost} <span className="text-[10px] font-bold text-zinc-400">¢</span></span>
+                        <ArrowRight className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                        <div className="text-right min-w-0">
+                          <span className="text-[9px] text-zinc-450 uppercase font-bold block truncate">{comparisonResult.version_b}</span>
+                          <span className="text-xl sm:text-2xl font-black text-zinc-800 whitespace-nowrap">
+                            {typeof comparisonResult.summary_b.avg_cost === 'number' ? comparisonResult.summary_b.avg_cost.toFixed(3) : comparisonResult.summary_b.avg_cost} <span className="text-[10px] font-bold text-zinc-400">¢</span>
+                          </span>
                         </div>
                       </div>
 
                       {comparisonResult.summary_b.avg_cost - comparisonResult.summary_a.avg_cost <= 0 ? (
-                        <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit">
+                        <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit shrink-0">
                           <TrendingUp className="h-3 w-3" />
                           -{(comparisonResult.summary_a.avg_cost - comparisonResult.summary_b.avg_cost).toFixed(4)}¢ cheaper
                         </div>
                       ) : (
-                        <div className="text-[10px] text-amber-700 font-extrabold flex items-center gap-1 mt-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
+                        <div className="text-[10px] text-amber-700 font-extrabold flex items-center gap-1 mt-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit shrink-0">
                           <TrendingDown className="h-3 w-3" />
                           +{(comparisonResult.summary_b.avg_cost - comparisonResult.summary_a.avg_cost).toFixed(4)}¢ costlier
                         </div>
