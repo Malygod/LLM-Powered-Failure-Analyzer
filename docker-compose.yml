@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sira_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: sira_user
+      POSTGRES_PASSWORD: sira_pass
+      POSTGRES_DB: sira_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sira_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://sira_user:sira_pass@db:5432/sira_db
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-https://api.openai.com/v1}
+      - OPENAI_MODEL_NAME=${OPENAI_MODEL_NAME:-gpt-4o-mini}
+      - PORT=8000
+      - HOST=0.0.0.0
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

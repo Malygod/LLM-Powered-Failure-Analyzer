@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+/frontend/node_modules/
+/backend/venv/
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Local Env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Databases and logs
+*.db
+*.sqlite
+*.log
+sira_prototype.db
+
+# Build outputs
+.next/
+/frontend/.next/
+out/
+dist/
+build/
+
+# System files
+.DS_Store
+Thumbs.db

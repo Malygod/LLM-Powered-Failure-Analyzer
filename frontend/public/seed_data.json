@@ -1,0 +1,272 @@
+[
+  {
+    "run_id": "run-flight-v1-001",
+    "version": "v1.0.0",
+    "agent_name": "TravelAssistant",
+    "project_name": "Sira Travel Bot",
+    "workspace_name": "Engineering Workspace",
+    "user_email": "matias@sira.ai",
+    "timestamp": "2026-06-09T08:00:00Z",
+    "success": true,
+    "latency_ms": 1520.0,
+    "cost_cents": 0.85,
+    "input_text": "Book a flight from New York to London",
+    "output_text": "Flight successfully booked from JFK to LHR on British Airways (BA-178). Conf: LH9921.",
+    "steps": [
+      {
+        "step_name": "Search Flights",
+        "input": "JFK to LHR",
+        "output": "Found 3 flights: BA-178, VS-104, AA-100",
+        "tokens": 120,
+        "latency_ms": 420.0,
+        "tool_calls": [
+          {
+            "tool_name": "skyscanner_flight_lookup",
+            "tool_input": "{\"origin\": \"JFK\", \"destination\": \"LHR\"}",
+            "tool_output": "{\"flights\": [\"BA-178\", \"VS-104\", \"AA-100\"]}",
+            "status": "success",
+            "latency_ms": 380.0
+          }
+        ]
+      },
+      {
+        "step_name": "Confirm Reservation",
+        "input": "BA-178",
+        "output": "Booking confirmed. PNR: LH9921",
+        "tokens": 250,
+        "latency_ms": 1100.0,
+        "tool_calls": [
+          {
+            "tool_name": "gds_confirm_seat",
+            "tool_input": "{\"flight\": \"BA-178\"}",
+            "tool_output": "{\"status\": \"confirmed\", \"pnr\": \"LH9921\"}",
+            "status": "success",
+            "latency_ms": 1050.0
+          }
+        ]
+      }
+    ],
+    "metrics": [
+      {
+        "metric_name": "booking_success",
+        "metric_value": 1.0
+      }
+    ],
+    "evaluations": [
+      {
+        "evaluator_name": "LLM-Factualness",
+        "score": 1.0,
+        "feedback": "Correctly extracted flight details matching flight search result."
+      }
+    ]
+  },
+  {
+    "run_id": "run-flight-v1-101",
+    "version": "v1.1.0",
+    "agent_name": "TravelAssistant",
+    "project_name": "Sira Travel Bot",
+    "workspace_name": "Engineering Workspace",
+    "user_email": "matias@sira.ai",
+    "timestamp": "2026-06-09T08:30:00Z",
+    "success": false,
+    "latency_ms": 5210.0,
+    "cost_cents": 0.22,
+    "input_text": "Book a flight from New York to London",
+    "output_text": "Failed: GDS server connection timed out.",
+    "steps": [
+      {
+        "step_name": "Search Flights",
+        "input": "JFK to LHR",
+        "output": "Error: Skyscanner GDS API connection timed out",
+        "tokens": 80,
+        "latency_ms": 5150.0,
+        "tool_calls": [
+          {
+            "tool_name": "skyscanner_flight_lookup",
+            "tool_input": "{\"origin\": \"JFK\", \"destination\": \"LHR\"}",
+            "tool_output": "None - HTTP Timeout 504",
+            "status": "failure",
+            "latency_ms": 5100.0
+          }
+        ]
+      }
+    ],
+    "error_details": {
+      "error_type": "FlightSearchApiError",
+      "message": "Skyscanner GDS API connection timed out during flight search after 5000ms limit.",
+      "stack_trace": "Traceback (most recent call last):\n  File \"/agent/tools.py\", line 42, in search_flights\n    res = requests.post(SKY_API, timeout=5.0)\nTimeoutError: Skyscanner connection timed out."
+    },
+    "metrics": [
+      {
+        "metric_name": "booking_success",
+        "metric_value": 0.0
+      }
+    ],
+    "evaluations": [
+      {
+        "evaluator_name": "LLM-Factualness",
+        "score": 0.0,
+        "feedback": "Agent failed to retrieve flight options."
+      }
+    ]
+  },
+  {
+    "run_id": "run-translate-v1-002",
+    "version": "v1.0.0",
+    "agent_name": "TravelAssistant",
+    "project_name": "Sira Travel Bot",
+    "workspace_name": "Engineering Workspace",
+    "user_email": "matias@sira.ai",
+    "timestamp": "2026-06-09T08:05:00Z",
+    "success": false,
+    "latency_ms": 820.0,
+    "cost_cents": 0.15,
+    "input_text": "Translate 'Hello' to Chinese",
+    "output_text": "Error: Unknown target language code 'CN'.",
+    "steps": [
+      {
+        "step_name": "Translate Text",
+        "input": "Hello to CN",
+        "output": "Error: Target language code 'CN' is not supported in the legacy translator.",
+        "tokens": 50,
+        "latency_ms": 800.0,
+        "tool_calls": [
+          {
+            "tool_name": "legacy_translate_tool",
+            "tool_input": "{\"text\": \"Hello\", \"lang\": \"CN\"}",
+            "tool_output": "{\"error\": \"UnsupportedLanguageCode\"}",
+            "status": "failure",
+            "latency_ms": 780.0
+          }
+        ]
+      }
+    ],
+    "error_details": {
+      "error_type": "TranslationEngineError",
+      "message": "Language code 'CN' is not registered in the legacy translator service database.",
+      "stack_trace": "Traceback (most recent call last):\n  File \"/agent/translator.py\", line 12, in do_translate\n    raise UnsupportedLanguageCode()\nUnsupportedLanguageCode"
+    }
+  },
+  {
+    "run_id": "run-translate-v1-102",
+    "version": "v1.1.0",
+    "agent_name": "TravelAssistant",
+    "project_name": "Sira Travel Bot",
+    "workspace_name": "Engineering Workspace",
+    "user_email": "matias@sira.ai",
+    "timestamp": "2026-06-09T08:35:00Z",
+    "success": true,
+    "latency_ms": 610.0,
+    "cost_cents": 0.38,
+    "input_text": "Translate 'Hello' to Chinese",
+    "output_text": "你好 (Nǐ hǎo)",
+    "steps": [
+      {
+        "step_name": "Translate Text",
+        "input": "Hello to Chinese",
+        "output": "你好 (Nǐ hǎo)",
+        "tokens": 150,
+        "latency_ms": 590.0,
+        "tool_calls": [
+          {
+            "tool_name": "modern_llm_translate_tool",
+            "tool_input": "{\"text\": \"Hello\", \"target_lang\": \"Chinese\"}",
+            "tool_output": "{\"translated_text\": \"你好 (Nǐ hǎo)\"}",
+            "status": "success",
+            "latency_ms": 570.0
+          }
+        ]
+      }
+    ],
+    "metrics": [
+      {
+        "metric_name": "translation_accuracy",
+        "metric_value": 1.0
+      }
+    ]
+  },
+  {
+    "run_id": "run-summary-v1-003",
+    "version": "v1.0.0",
+    "agent_name": "TravelAssistant",
+    "project_name": "Sira Travel Bot",
+    "workspace_name": "Engineering Workspace",
+    "user_email": "matias@sira.ai",
+    "timestamp": "2026-06-09T08:10:00Z",
+    "success": true,
+    "latency_ms": 2200.0,
+    "cost_cents": 1.45,
+    "input_text": "Summarize this article about quantum physics",
+    "output_text": "Quantum physics describes the behavior of matter and energy at the atomic scale, introducing principles like superposition and entanglement.",
+    "steps": [
+      {
+        "step_name": "Fetch Article",
+        "input": "quantum physics article source",
+        "output": "Quantum mechanics is a fundamental theory in physics...",
+        "tokens": 800,
+        "latency_ms": 600.0,
+        "tool_calls": [
+          {
+            "tool_name": "web_page_crawler",
+            "tool_input": "{\"url\": \"https://example.com/quantum-physics\"}",
+            "tool_output": "Quantum mechanics is a fundamental theory in physics...",
+            "status": "success",
+            "latency_ms": 550.0
+          }
+        ]
+      },
+      {
+        "step_name": "LLM Summarize",
+        "input": "Summarize: Quantum mechanics is a fundamental theory...",
+        "output": "Quantum physics describes the behavior...",
+        "tokens": 1200,
+        "latency_ms": 1550.0
+      }
+    ]
+  },
+  {
+    "run_id": "run-summary-v1-103",
+    "version": "v1.1.0",
+    "agent_name": "TravelAssistant",
+    "project_name": "Sira Travel Bot",
+    "workspace_name": "Engineering Workspace",
+    "user_email": "matias@sira.ai",
+    "timestamp": "2026-06-09T08:40:00Z",
+    "success": true,
+    "latency_ms": 1780.0,
+    "cost_cents": 1.12,
+    "input_text": "Summarize this article about quantum physics",
+    "output_text": "Quantum mechanics studies matter and light on the atomic scale, featuring superposition, wave-particle duality, and entanglement.",
+    "steps": [
+      {
+        "step_name": "Fetch Article",
+        "input": "quantum physics article source",
+        "output": "Quantum mechanics is a fundamental theory in physics...",
+        "tokens": 800,
+        "latency_ms": 550.0,
+        "tool_calls": [
+          {
+            "tool_name": "web_page_crawler",
+            "tool_input": "{\"url\": \"https://example.com/quantum-physics\"}",
+            "tool_output": "Quantum mechanics is a fundamental theory in physics...",
+            "status": "success",
+            "latency_ms": 510.0
+          }
+        ]
+      },
+      {
+        "step_name": "LLM Summarize Fast",
+        "input": "Summarize: Quantum mechanics is a fundamental theory...",
+        "output": "Quantum mechanics studies matter...",
+        "tokens": 900,
+        "latency_ms": 1200.0
+      }
+    ],
+    "metrics": [
+      {
+        "metric_name": "compression_ratio",
+        "metric_value": 0.88
+      }
+    ]
+  }
+]
