@@ -408,7 +408,7 @@ export default function Home() {
           />
         </div>
 
-        <nav className="flex flex-row lg:flex-col gap-1 w-full sm:w-auto lg:w-full overflow-x-auto lg:overflow-visible pb-1 sm:pb-0 lg:pb-0 justify-center sm:justify-end lg:justify-start lg:mt-6">
+        <nav className="flex flex-row lg:flex-col gap-1 w-full sm:w-auto lg:w-full overflow-x-auto lg:overflow-visible pb-1 sm:pb-0 lg:pb-0 justify-start lg:justify-start lg:mt-6">
           <button 
             onClick={() => setActiveTab("dashboard")}
             className={`flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-150 shrink-0 ${
