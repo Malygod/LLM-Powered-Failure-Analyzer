@@ -400,15 +400,12 @@ export default function Home() {
       <aside className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white flex flex-col sm:flex-row lg:flex-col p-5 lg:p-6 sticky top-0 lg:h-screen shrink-0 z-50 shadow-sm lg:shadow-none items-center sm:justify-between lg:justify-start lg:items-stretch gap-4 sm:gap-0 lg:gap-0">
         
         {/* Sira Brand Logo Image */}
-        <div className="flex items-center gap-2.5 px-1 shrink-0">
-          <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-250 shadow-sm shrink-0">
-            <img 
-              src="/logo.png" 
-              alt="Sira AI Logo" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <span className="font-extrabold text-sm tracking-tight text-zinc-950">Sira AI</span>
+        <div className="w-28 h-9 overflow-hidden relative flex items-center justify-center shrink-0">
+          <img 
+            src="/logo.png" 
+            alt="Sira AI Logo" 
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <nav className="flex flex-row lg:flex-col gap-1 w-full sm:w-auto lg:w-full overflow-x-auto lg:overflow-visible pb-1 sm:pb-0 lg:pb-0 justify-start lg:justify-start lg:mt-6">
