@@ -1,118 +1,159 @@
-# Sira AI - AI Agent Performance Platform MVP Prototype
+# Causelab
 
-This repository contains a fully cohesive MVP prototype for Sira AI's agent observability, comparison, and analysis platform. It implements trace ingestion, an analytics dashboard, regression detection (input-matching hash-based), and LLM failure diagnostic suggestions.
+**Understand agent failures. Test better behavior.**
 
----
+A recruiter-friendly AI reliability prototype by Matías Sepúlveda. Inspect agent traces, distinguish execution success from answer quality, compare versions, and review an evidence-backed repair against a fixed benchmark.
 
-## Architecture Overview
+[Try the recorded demo](https://llm-powered-failure-analyzer.vercel.app/demo) · [Engineering case study](docs/CASE_STUDY.md) · [Python SDK](sdk/README.md)
+
+> The hosted URL is the existing deployment target. This revision must be deployed before it displays Causelab. The public experience contains clearly labeled **simulated traces and recorded test results**, not live LLM calls.
+
+## The three-minute review
+
+1. Open `/demo` and select **Explore the regression**.
+2. Inspect `retrieve`: only the overview was returned, omitting the archive policy.
+3. Inspect `compose`: the run completed, but its answer invents a 90-day retention period.
+4. Open the recorded investigation, follow its evidence links, and review all 20 test results.
+5. Export the report or compare `faulty` with `repaired`.
+
+The benchmark records **8/20 → 20/20** passing cases for the scripted reference agent. It tests required facts, known forbidden claims, citations, abstention, and tool behavior. It does not prove general factuality or production safety. Latency in the public dataset is simulated, model calls and spend are zero, and no LLM judge was used.
+
+## Architecture
 
 ```mermaid
-graph TD
-    A[Agent Runs JSON / SDK Ingestion] -->|POST /api/ingest| B(FastAPI Backend)
-    B -->|SQLAlchemy| C[(PostgreSQL / SQLite)]
-    B -->|OpenAI SDK compatible| D[LLM Provider: OpenAI or Qwen]
-    E[Next.js Dashboard App] -->|REST Calls| B
-    E -->|Interactive Trigger| B
+flowchart LR
+  SDK[Python SDK] --> API[FastAPI ingestion]
+  API --> DB[(PostgreSQL)]
+  DB --> W[Leased investigation worker]
+  W --> LLM[Configured model provider]
+  W --> S[Fixed-document sandbox]
+  S --> R[Versioned checks + report]
+  DB --> UI[Next.js / React interface]
+  F[Executable recorded fixtures] --> D[Public demo: no backend]
 ```
 
----
+- **Frontend:** Next.js, React, TypeScript. Shared view contracts for recorded and live responses.
+- **Backend:** FastAPI, SQLAlchemy, Alembic. Legacy ingestion payloads are accepted.
+- **Queue:** PostgreSQL jobs with claim locks, leases, fencing tokens, durable checkpoints, bounded attempts and backoff. No in-process FastAPI background task is relied upon.
+- **SDK:** Python 3.11+, standard library only. Sync/async contexts, nested spans, bounded export queue and retries, configurable redaction.
 
-## Features Implemented
+## Run the recorded demo
 
-1. **Trace Ingestion Engine**:
-   - `POST /api/ingest` resolves relational constraints dynamically: it registers Users, Workspaces, Projects, Agents, and Versions on the fly when parsing new run data.
-   - Computes a normalized SHA-256 hash of the input query text to match runs across different agent versions.
-   - Records nested execution steps, tool calls, error metrics, and evaluator scores.
+Node 24 and npm:
 
-2. **Observability Dashboard**:
-   - Lists ingested agent runs with filters for Version, Agent, and Success/Failure state.
-   - Trace step explorer detailing input/outputs, latency, token count, and nested tool calls (including parameters/returns) for each step.
-   - Displays evaluation judge scores and metrics.
-
-3. **Version Comparison Engine**:
-   - Matches runs from Version A and Version B based on normalized input text hashes.
-   - Computes comparative statistics (success rates, latencies, and costs).
-   - Detects **Regressions** (succeeded in baseline, failed in candidate) and **Improvements** (failed in baseline, succeeded in candidate) to help developers gauge performance changes.
-
-4. **LLM Failure Diagnostics**:
-   - Interactive single-click failure analysis.
-   - Sends the error details, stack trace, and the last executed step details to OpenAI or Qwen API.
-   - Summarizes the root cause and outputs an actionable codebase fix suggestion.
-   - Automatically falls back to a smart mock diagnostic if no API keys are present.
-
----
-
-## Database Schema Design
-
-The SQLAlchemy Models map the requested MVP relations:
-- `users`: ID, unique email, creation timestamp.
-- `workspaces`: Owned by a user.
-- `projects`: Belongs to a workspace.
-- `agents`: Belongs to a project.
-- `versions`: Belongs to an agent (tracks tags like `v1.0.0`, `v1.1.0`).
-- `runs`: Stores latency, cost, success state, input, output, and computed `input_hash`.
-- `steps`: Individual steps inside a run, with order index.
-- `tool_calls`: Tracks nested tool calls, latency, and status.
-- `errors`: Stores exception type, messages, and stack trace logs.
-- `metrics`: Custom numeric evaluator metrics.
-- `evaluations`: Custom text feedback and evaluator scores.
-- `failure_analyses`: Saves AI-generated diagnostic summaries and fixes.
-
----
-
-## Setup & Running Instructions
-
-### Backend (Python FastAPI)
-
-1. Navigate to backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Copy the environment template and set your configuration variables:
-   ```bash
-   cp ../.env.example .env
-   ```
-   *Note: If you have a Qwen API key, you can configure it inside `.env` using the OpenAI compatibility layer settings.*
-5. Run the FastAPI development server:
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-
-*Alternatively, start PostgreSQL and Backend together using Docker Compose in the root directory:*
-```bash
-docker-compose up --build -d
+```sh
+cd frontend
+npm ci
+npm run dev
 ```
 
-### Frontend (Next.js + Tailwind + Bun)
+Open `http://localhost:3000/demo`. There is no backend or model-key prerequisite. `/` redirects to `/demo`. Live pages are disabled by default.
 
-1. Navigate to frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   bun install
-   ```
-3. Run the development server:
-   ```bash
-   bun run dev
-   ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## Local live mode
 
----
+### Docker Compose (recommended)
 
-## Seeding the Prototype Dashboard
+```sh
+# From the repository root. Optionally export OPENAI_API_KEY for investigations.
+docker compose up --build -d
+# Import recorded traces without presenting them as live model responses.
+docker compose cp seed_data.json backend:/tmp/seed_data.json
+docker compose exec backend python -m app.seed /tmp/seed_data.json
+```
 
-1. Navigate to the **Trace Ingestion** tab in the dashboard.
-2. Click **Load Seed dataset (seed_data.json)** to populate the text box with simulated multi-version agent traces.
-3. Click **Submit Ingest Traces** to process the seed data.
-4. Navigate to the **Runs Explorer** or **Compare Versions** to visualize the ingested traces!
+The stack binds API/database ports to localhost. PostgreSQL readiness precedes migrations; API and worker start only after migrations succeed. These local credentials and unauthenticated APIs are for a developer machine, not public hosting.
+
+In `frontend/.env.local`:
+
+```dotenv
+ENABLE_LIVE_UI=true
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Start/restart the frontend and open `/live`. To instrument your own agent:
+
+```sh
+python -m pip install ./sdk
+python scripts/example_agent.py
+```
+
+### Without Docker
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r backend/requirements-dev.txt ./sdk
+cd backend
+cp ../.env.example .env
+alembic upgrade head
+python -m app.seed ../seed_data.json
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+# Another terminal, from backend with the same environment:
+python -m app.worker
+```
+
+SQLite supports local exploration and unit tests. Use PostgreSQL for multiple workers; CI separately exercises PostgreSQL concurrent claims.
+
+### Live investigator boundaries
+
+Select a failed execution or a completed run with failed quality checks. The investigator reads the full bounded trace, matching baseline, and evaluation feedback; proposes one candidate; then evaluates that candidate against 20 fixed cases using actual provider responses.
+
+- Provider: `OPENAI_API_KEY`, optional `OPENAI_API_BASE`, `OPENAI_MODEL_NAME`. It must support chat completions with JSON object output. No key or provider error produces an explicit failed job, never a mock success.
+- Allowlist: prompt text, retrieval `top_k` 1–3, and 0–1 simulated tool retries. No repository writes, arbitrary Python execution, external tool requests, or production changes.
+- Budgets: 180-second wall-clock window, 24 model calls maximum including retries, 1,200 completion tokens per call, 12-second per-call timeout. SDK/provider automatic retries are disabled in the investigator.
+- Jobs: up to 3 attempts, exponential delay, 240-second lease, token fencing. Completed case results and spent model calls are persisted. A crashed long-running job can fail its time budget on recovery; it never silently resets its budget.
+- Baseline results in the report are explicitly labeled **simulated faulty reference agent**; the candidate is a **live model against fixed sandbox tools**. This is a controlled benchmark, not a claim that a customer's exact agent was replayed.
+- Live sandbox execution is supported only for the bundled knowledge-assistant case IDs. Other agents can ingest and inspect traces; their investigations return `unsupported_sandbox` until an executor/evaluation dataset is implemented.
+- Model-judged evaluation and model-cost pricing are not implemented. Token usage is recorded; live investigation cost is shown as unavailable.
+- Adoption requires developer review. Exported reports include remaining failures and newly introduced regressions.
+
+## APIs and compatibility
+
+- `POST /api/ingest`: existing list-of-runs format, with optional span/parent IDs, timestamps, kind/status, attributes, model, prompt version and case ID. Batch limit 100.
+- Exact repeats are accepted without deleting anything. Different payload for an existing ID returns HTTP 409. Legacy records lacking fingerprints are preserved and require a new ID for re-ingestion.
+- `GET /api/runs`: pagination, version/agent/execution/search filters, plus aggregate statistics over **all** matching runs.
+- `GET /api/runs/{id}`: trace and quality details.
+- `GET /api/compare`: pairs stable case IDs (normalized-input fallback for legacy records), chronologically matches repeated observations, and reports unmatched IDs.
+- `POST /api/runs/{id}/investigations`: HTTP 202 with a durable job. Repeated submissions return the same job for `investigator/1`.
+- `GET /api/investigations/{id}`: queued/running/completed/failed state and report.
+- Old `/analyze` route is deprecated and now returns the same asynchronous job contract. The former synchronous summary response has changed.
+- `/api/debug` has been removed. All data endpoints require local `LIVE_ENABLED=true`; this flag is an exposure boundary, **not authentication**.
+
+## Data migration
+
+Back up the database first. `alembic upgrade head` adopts the original unversioned schema and adds metadata, benchmark definitions, and investigation jobs without dropping traces or failure analyses. Destructive downgrades are deliberately unavailable.
+
+The old SQLite filename is recognized only in the compatibility helper. If both old and new local databases exist, startup requires an explicit `DATABASE_URL`. To rename safely, stop API/worker, back up with SQLite's backup command, and set `DATABASE_URL` to the verified new copy; do not copy a running WAL database's main file alone. Existing Docker volumes retain their old user/database names: set `DATABASE_URL` and database service credentials to the existing values before upgrading. Do not replace or delete a volume to rebrand it.
+
+## Reproduce and verify
+
+```sh
+pip install -r backend/requirements-dev.txt ./sdk
+PYTHONPATH=backend:sdk pytest -q backend/tests sdk/tests
+python scripts/build_demo.py
+cd frontend
+npm run lint
+npm run typecheck
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+`seed_data.json` and `frontend/src/lib/recorded.json` are generated from the same executable cases. Do not hand-edit them. CI checks regeneration, backend/SDK behavior, migrations, PostgreSQL claim concurrency, frontend checks and browser flows on desktop/mobile.
+
+## Walkthrough recording
+
+With a production preview running on port 3000:
+
+```sh
+cd frontend
+npm run record
+```
+
+The script captures a short silent walkthrough to `public/walkthrough.webm` and a dashboard screenshot under ignored `artifacts/`. The About page links the recording. [Narration/caption script](docs/WALKTHROUGH.md).
+
+## Public deployment
+
+The existing Vercel project can keep its repository Root Directory: the root `vercel.json` preserves its services configuration with **only the frontend service**, rooted at `frontend`. The Python backend is not exposed. For a separate standard Next.js project, set Root Directory to `frontend`; `frontend/vercel.json` installs/builds that app only. Leave `ENABLE_LIVE_UI` disabled. Set `NEXT_PUBLIC_SITE_URL` to the chosen production URL for social previews. No database or provider secret belongs in the public deployment.
+
+After deploying, verify `/demo`, a direct trace URL, `/demo/compare`, `/about`, `/opengraph-image`, and `/walkthrough.webm`; `/live` should be unavailable. Publishing requires access to the existing Vercel project. This follows [Vercel’s monorepo project setup](https://vercel.com/docs/monorepos). See [case study](docs/CASE_STUDY.md) for the validation record and honest limitations.

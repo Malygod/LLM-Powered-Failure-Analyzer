@@ -1,33 +1,29 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Sira AI - Agent Performance Platform",
-  description: "Observability, comparison, and failure analysis for AI agents",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://llm-powered-failure-analyzer.vercel.app",
+  ),
+  title: {
+    default: "Causelab — Understand agent failures",
+    template: "%s · Causelab",
+  },
+  description:
+    "Inspect agent traces, investigate failures, and test better behavior. An independent AI engineering project by Matías Sepúlveda.",
+  icons: { icon: "/causelab.svg" },
+  openGraph: {
+    title: "Causelab — Understand agent failures. Test better behavior.",
+    description: "A three-minute interactive AI reliability demo.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
 };
-
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }

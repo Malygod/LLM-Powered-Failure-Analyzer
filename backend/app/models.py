@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey, Text
+from app.timeutils import utcnow
+from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -7,14 +8,14 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     workspaces = relationship("Workspace", back_populates="user", cascade="all, delete-orphan")
 
 class Workspace(Base):
     __tablename__ = "workspaces"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     user = relationship("User", back_populates="workspaces")
     projects = relationship("Project", back_populates="workspace", cascade="all, delete-orphan")
@@ -23,7 +24,7 @@ class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     workspace = relationship("Workspace", back_populates="projects")
     agents = relationship("Agent", back_populates="project", cascade="all, delete-orphan")
@@ -32,7 +33,7 @@ class Agent(Base):
     __tablename__ = "agents"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     project = relationship("Project", back_populates="agents")
     versions = relationship("Version", back_populates="agent", cascade="all, delete-orphan")
@@ -41,22 +42,27 @@ class Version(Base):
     __tablename__ = "versions"
     id = Column(Integer, primary_key=True, index=True)
     version_tag = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     agent_id = Column(Integer, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
     agent = relationship("Agent", back_populates="versions")
     runs = relationship("Run", back_populates="version", cascade="all, delete-orphan")
 
 class Run(Base):
+    payload_hash = Column(String, nullable=True)
+    case_id = Column(String, index=True, nullable=True)
+    model = Column(String, nullable=True)
+    prompt_version = Column(String, nullable=True)
+    source = Column(String, default="live")
     __tablename__ = "runs"
     id = Column(String, primary_key=True, index=True)  # Using external UUID or run_id
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=utcnow)
     success = Column(Boolean, default=True)
     latency_ms = Column(Float, default=0.0)
     cost_cents = Column(Float, default=0.0)
     input_hash = Column(String, index=True, nullable=False)
     input_text = Column(Text, nullable=True)
     output_text = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     version_id = Column(Integer, ForeignKey("versions.id", ondelete="CASCADE"), nullable=False)
     version = relationship("Version", back_populates="runs")
     
@@ -67,6 +73,13 @@ class Run(Base):
     failure_analysis = relationship("FailureAnalysis", back_populates="run", uselist=False, cascade="all, delete-orphan")
 
 class Step(Base):
+    span_id = Column(String, nullable=True)
+    parent_span_id = Column(String, nullable=True)
+    started_at = Column(DateTime, nullable=True)
+    ended_at = Column(DateTime, nullable=True)
+    kind = Column(String, nullable=True)
+    status = Column(String, nullable=True)
+    attributes = Column(JSON, nullable=True)
     __tablename__ = "steps"
     id = Column(Integer, primary_key=True, index=True)
     step_name = Column(String, nullable=False)
@@ -75,7 +88,7 @@ class Step(Base):
     tokens = Column(Integer, default=0)
     latency_ms = Column(Float, default=0.0)
     step_order = Column(Integer, default=0)  # to maintain sequence
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     run_id = Column(String, ForeignKey("runs.id", ondelete="CASCADE"), nullable=False)
     run = relationship("Run", back_populates="steps")
     
@@ -90,7 +103,7 @@ class ToolCall(Base):
     tool_output = Column(Text, nullable=True)
     status = Column(String, default="success")  # success, failure
     latency_ms = Column(Float, default=0.0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     step_id = Column(Integer, ForeignKey("steps.id", ondelete="CASCADE"), nullable=False)
     step = relationship("Step", back_populates="tool_calls")
 
@@ -100,7 +113,7 @@ class Error(Base):
     error_type = Column(String, nullable=True)
     message = Column(Text, nullable=False)
     stack_trace = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     run_id = Column(String, ForeignKey("runs.id", ondelete="CASCADE"), nullable=False)
     run = relationship("Run", back_populates="errors")
     step_id = Column(Integer, ForeignKey("steps.id", ondelete="CASCADE"), nullable=True)
@@ -111,17 +124,19 @@ class Metric(Base):
     id = Column(Integer, primary_key=True, index=True)
     metric_name = Column(String, nullable=False)
     metric_value = Column(Float, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     run_id = Column(String, ForeignKey("runs.id", ondelete="CASCADE"), nullable=False)
     run = relationship("Run", back_populates="metrics")
 
 class Evaluation(Base):
+    check_version = Column(String, nullable=True)
+    method = Column(String, default="deterministic")
     __tablename__ = "evaluations"
     id = Column(Integer, primary_key=True, index=True)
     evaluator_name = Column(String, nullable=False)
     score = Column(Float, nullable=False)
     feedback = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     run_id = Column(String, ForeignKey("runs.id", ondelete="CASCADE"), nullable=False)
     run = relationship("Run", back_populates="evaluations")
 
@@ -130,7 +145,7 @@ class FailureAnalysis(Base):
     id = Column(Integer, primary_key=True, index=True)
     error_summary = Column(Text, nullable=False)
     suggested_fix = Column(Text, nullable=False)
-    analyzed_at = Column(DateTime, default=datetime.utcnow)
+    analyzed_at = Column(DateTime, default=utcnow)
     run_id = Column(String, ForeignKey("runs.id", ondelete="CASCADE"), nullable=False, unique=True)
     run = relationship("Run", back_populates="failure_analysis")
 
@@ -142,7 +157,31 @@ class Report(Base):
     summary = Column(Text, nullable=False)
     status = Column(String, nullable=False)  # better, worse, risky
     details = Column(Text, nullable=True)  # JSON serialized data containing comparisons
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     
     version_a = relationship("Version", foreign_keys=[version_a_id])
     version_b = relationship("Version", foreign_keys=[version_b_id])
+
+
+class EvaluationCase(Base):
+    __tablename__ = "evaluation_cases"
+    id = Column(String, primary_key=True)
+    check_version = Column(String, nullable=False)
+    definition = Column(JSON, nullable=False)
+
+class Investigation(Base):
+    __tablename__ = "investigations"
+    id = Column(String, primary_key=True)
+    run_id = Column(String, ForeignKey("runs.id"), nullable=False)
+    dedupe_key = Column(String, unique=True, nullable=False)
+    status = Column(String, nullable=False, default="queued", index=True)
+    attempts = Column(Integer, nullable=False, default=0)
+    available_at = Column(DateTime, nullable=False, default=utcnow)
+    lease_until = Column(DateTime, nullable=True)
+    lease_token = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+    updated_at = Column(DateTime, nullable=False, default=utcnow)
+    error_code = Column(String, nullable=True)
+    error_message = Column(Text, nullable=True)
+    report = Column(JSON, nullable=True)
+    checkpoint = Column(JSON, nullable=True)

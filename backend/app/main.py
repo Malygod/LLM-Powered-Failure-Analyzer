@@ -1,160 +1,109 @@
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Query
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from app import models, schemas, crud, database, analyzer
+from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
+from app import models, schemas, crud, database
+from app.config import settings
+from app.jobs import enqueue
 
-# Auto-create tables on startup (perfect for zero-setup demo!)
-try:
-    models.Base.metadata.create_all(bind=database.engine)
-    print("Database tables created/verified successfully.")
-except Exception as e:
-    import sys
-    print(f"Error creating database tables at startup: {e}", file=sys.stderr)
+app = FastAPI(title="Causelab API", version="2.0.0")
+app.add_middleware(CORSMiddleware, allow_origins=settings.allowed_origins,
+                  allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
 
-app = FastAPI(title="Sira AI MVP API Platform", version="1.0.0")
+def live_access():
+    if not settings.live_enabled:
+        raise HTTPException(403, "Live mode is disabled. Use the recorded demo or enable LIVE_ENABLED locally.")
 
-# Setup CORS for frontend communication
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # For prototype, allow all origins. Can be locked down later.
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-@app.get("/")
-def health_check():
-    return {"status": "healthy", "service": "Sira AI API"}
-
-@app.get("/api/debug")
-def debug_info():
-    import traceback
-    import sys
-    import os
-    from sqlalchemy import text
-    
-    db_info = "Not configured"
-    db_conn_status = "Not tested"
-    db_error = None
-    
+@app.get('/')
+def health_check(db: Session = Depends(database.get_db)):
     try:
-        from app.database import db_url
-        if db_url:
-            # Simple manual mask to avoid credentials leak
-            if "@" in db_url:
-                parts = db_url.split("@")
-                prefix = parts[0]
-                suffix = parts[-1]
-                if "://" in prefix:
-                    proto, credentials = prefix.split("://", 1)
-                    if ":" in credentials:
-                        user, _ = credentials.split(":", 1)
-                        masked_credentials = f"{user}:****"
-                    else:
-                        masked_credentials = "****"
-                    db_info = f"{proto}://{masked_credentials}@{suffix}"
-                else:
-                    db_info = f"****@{suffix}"
-            else:
-                db_info = db_url
-            
-            # Try connecting
-            with database.engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
-            db_conn_status = "Connected successfully"
-        else:
-            db_conn_status = "No DB URL"
-    except Exception as e:
-        db_conn_status = "Failed"
-        db_error = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
-        
-    return {
-        "python_version": sys.version,
-        "database_url_masked": db_info,
-        "database_connection_status": db_conn_status,
-        "database_error": db_error,
-        "env_keys": list(os.environ.keys())
-    }
+        db.execute(text('SELECT 1'))
+        revision = db.execute(text('SELECT version_num FROM alembic_version')).scalar()
+        if revision != '0002':
+            raise RuntimeError('Migration required')
+    except Exception:
+        raise HTTPException(503, 'Database unavailable or migrations pending')
+    return {"status": "healthy", "service": "Causelab API"}
 
 
-@app.post("/api/ingest", response_model=dict)
-def ingest_traces(payload: List[schemas.IngestRunPayload], db: Session = Depends(database.get_db)):
+@app.post('/api/ingest', dependencies=[Depends(live_access)])
+def ingest_traces(payload: list[schemas.IngestRunPayload], db: Session = Depends(database.get_db)):
+    if len(payload) > 100:
+        raise HTTPException(413, 'Maximum 100 runs per batch')
     try:
         runs = crud.ingest_runs(db, payload)
-        return {"status": "success", "message": f"Successfully ingested {len(runs)} run traces"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Ingestion failed: {str(e)}")
+        return {"status": "success", "message": f"Accepted {len(runs)} traces", "run_ids": [r.id for r in runs]}
+    except (crud.ConflictError, IntegrityError):
+        db.rollback()
+        raise HTTPException(409, 'Run conflict; retry identical content or use a new run ID')
+    except Exception:
+        db.rollback()
+        raise
 
-@app.get("/api/projects", response_model=List[schemas.ProjectResponse])
-def get_projects(db: Session = Depends(database.get_db)):
+
+@app.get('/api/projects', response_model=list[schemas.ProjectResponse], dependencies=[Depends(live_access)])
+def projects(db: Session = Depends(database.get_db)):
     return crud.get_projects(db)
 
-@app.get("/api/agents", response_model=List[schemas.AgentResponse])
-def get_agents(project_id: Optional[int] = None, db: Session = Depends(database.get_db)):
-    return crud.get_agents(db, project_id=project_id)
 
-@app.get("/api/versions", response_model=List[schemas.VersionResponse])
-def get_versions(agent_id: Optional[int] = None, db: Session = Depends(database.get_db)):
-    return crud.get_versions(db, agent_id=agent_id)
+@app.get('/api/agents', response_model=list[schemas.AgentResponse], dependencies=[Depends(live_access)])
+def agents(project_id: int | None = None, db: Session = Depends(database.get_db)):
+    return crud.get_agents(db, project_id)
 
-@app.get("/api/runs")
-def get_runs(
-    version_id: Optional[int] = None,
-    success: Optional[bool] = None,
-    skip: int = 0,
-    limit: int = 50,
-    db: Session = Depends(database.get_db)
-):
-    runs, total = crud.get_runs(db, version_id=version_id, success=success, skip=skip, limit=limit)
-    return {
-        "runs": runs,
-        "total": total,
-        "skip": skip,
-        "limit": limit
-    }
 
-@app.get("/api/runs/{run_id}", response_model=schemas.RunDetailResponse)
-def get_run_detail(run_id: str, db: Session = Depends(database.get_db)):
+@app.get('/api/versions', response_model=list[schemas.VersionResponse], dependencies=[Depends(live_access)])
+def versions(agent_id: int | None = None, db: Session = Depends(database.get_db)):
+    return crud.get_versions(db, agent_id)
+
+
+@app.get('/api/runs', dependencies=[Depends(live_access)])
+def runs(version_id: int | None = None, success: bool | None = None, agent_id: int | None = None,
+         search: str | None = None, skip: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100),
+         db: Session = Depends(database.get_db)):
+    rows, total = crud.get_runs(db, version_id, success, skip, limit, agent_id, search)
+    return {"runs": rows, "total": total, "skip": skip, "limit": limit,
+            "stats": crud.aggregate(db, version_id, success, agent_id, search)}
+
+
+@app.get('/api/runs/{run_id}', response_model=schemas.RunDetailResponse, dependencies=[Depends(live_access)])
+def detail(run_id: str, db: Session = Depends(database.get_db)):
     run = crud.get_run_detail(db, run_id)
     if not run:
-        raise HTTPException(status_code=404, detail="Run trace not found")
-    return run
+        raise HTTPException(404, 'Trace not found')
+    result = schemas.RunDetailResponse.model_validate(run).model_dump()
+    return {**result, **crud.run_item(run), 'steps': sorted(result['steps'], key=lambda s: (s['step_order'], s['id']))}
 
-@app.get("/api/compare", response_model=schemas.VersionCompareSummary)
-def compare_versions(
-    version_a: int = Query(..., description="ID of Version A"),
-    version_b: int = Query(..., description="ID of Version B"),
-    db: Session = Depends(database.get_db)
-):
+
+@app.get('/api/compare', response_model=schemas.VersionCompareSummary, dependencies=[Depends(live_access)])
+def compare(version_a: int, version_b: int, db: Session = Depends(database.get_db)):
     try:
-        comparison = crud.compare_versions(db, version_a, version_b)
-        return comparison
+        return crud.compare_versions(db, version_a, version_b)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
+        raise HTTPException(400, str(e))
 
-@app.post("/api/runs/{run_id}/analyze", response_model=schemas.FailureAnalysisResponse)
-def analyze_run_failure(
-    run_id: str,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(database.get_db)
-):
-    # Check if run exists and is failed
-    run = crud.get_run_detail(db, run_id)
+
+@app.post('/api/runs/{run_id}/investigations', status_code=202, response_model=schemas.InvestigationResponse, dependencies=[Depends(live_access)])
+def investigate(run_id: str, db: Session = Depends(database.get_db)):
+    run = db.get(models.Run, run_id)
     if not run:
-        raise HTTPException(status_code=404, detail="Run trace not found")
-    if run.success:
-        raise HTTPException(status_code=400, detail="Cannot analyze a successful run")
-        
-    # Trigger LLM analysis
-    try:
-        # We can either run it synchronously for instant dashboard feedback in the prototype,
-        # or in background_tasks. Let's do it synchronously here for immediate UI response.
-        # This keeps the prototype experience extremely responsive!
-        analysis = analyzer.analyze_failure(db, run_id)
-        return analysis
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(404, 'Trace not found')
+    if run.success and crud.quality(run) != 'failed':
+        raise HTTPException(400, 'Select an execution failure or a failed quality check')
+    return enqueue(db, run_id)
+
+
+@app.get('/api/investigations/{job_id}', response_model=schemas.InvestigationResponse, dependencies=[Depends(live_access)])
+def investigation(job_id: str, db: Session = Depends(database.get_db)):
+    job = db.get(models.Investigation, job_id)
+    if not job:
+        raise HTTPException(404, 'Investigation not found')
+    return job
+
+
+@app.post('/api/runs/{run_id}/analyze', status_code=202, response_model=schemas.InvestigationResponse, dependencies=[Depends(live_access)], deprecated=True)
+def legacy_analysis(run_id: str, db: Session = Depends(database.get_db)):
+    """Compatibility route: diagnostics now return an asynchronous investigation job."""
+    return investigate(run_id, db)
