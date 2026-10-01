@@ -20,7 +20,7 @@ export default function About() {
           how do we know when an agent’s behavior gets worse?
         </p>
         <p>
-          Causelab combines a Python tracing SDK, FastAPI ingestion, relational
+          OMNI combines a Python tracing SDK, FastAPI ingestion, relational
           data, durable investigations, and a TypeScript interface. This
           iteration was developed with AI coding assistance; the source and test
           suite make the implementation open to review.
@@ -57,7 +57,7 @@ export default function About() {
           <p>
             The featured agent retrieves an overview but misses the archive
             policy. It completes normally and confidently invents a 90-day
-            retention window. Causelab separates execution from answer quality,
+            retention window. OMNI separates execution from answer quality,
             shows the missing evidence, and turns the failure into a testable
             repair.
           </p>
@@ -139,7 +139,7 @@ export default function About() {
             using the README. No package-registry release is implied.
           </p>
           <pre>
-            <code>{`pip install ./sdk\n\nfrom causelab import Client\n\nwith Client(endpoint="http://localhost:8000") as client:\n    with client.run("MyAgent", input=query, version="v1") as run:\n        with client.span("retrieve", kind="tool", input=query) as span:\n            documents = search(query)\n            span.set_output(documents)\n        run.set_output(answer)`}</code>
+            <code>{`pip install ./sdk\n\nfrom omni import Client\n\nwith Client(endpoint="http://localhost:8000") as client:\n    with client.run("MyAgent", input=query, version="v1") as run:\n        with client.span("retrieve", kind="tool", input=query) as span:\n            documents = search(query)\n            span.set_output(documents)\n        run.set_output(answer)`}</code>
           </pre>
           <p>
             The SDK captures nested sync/async spans and exceptions, redacts

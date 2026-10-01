@@ -1,4 +1,4 @@
-# Causelab
+# OMNI
 
 **Understand agent failures. Test better behavior.**
 
@@ -6,7 +6,7 @@ A recruiter-friendly AI reliability prototype by Matías Sepúlveda. Inspect age
 
 [Try the recorded demo](https://llm-powered-failure-analyzer.vercel.app/demo) · [Engineering case study](docs/CASE_STUDY.md) · [Python SDK](sdk/README.md)
 
-> The hosted URL is the existing deployment target. This revision must be deployed before it displays Causelab. The public experience contains clearly labeled **simulated traces and recorded test results**, not live LLM calls.
+> The public experience contains clearly labeled **simulated traces and recorded test results**, not live LLM calls.
 
 ## The three-minute review
 

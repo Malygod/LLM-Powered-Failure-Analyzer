@@ -1,9 +1,9 @@
-# Causelab Python SDK
+# OMNI Python SDK
 
 Install from this repository: `pip install ./sdk`. No registry release is implied.
 
 ```python
-from causelab import Client
+from omni import Client
 
 with Client() as client:
     with client.run("MyAgent", input="question", version="v1") as run:
@@ -23,4 +23,4 @@ Completed runs enter an in-memory queue (default 100). A daemon exporter sends e
 
 Run IDs are generated UUIDs. Nested span timestamps and latency come from wall and monotonic clocks respectively. Token usage, cost and quality checks are explicitly supplied by the caller; the SDK does not invent provider usage or auto-instrument model libraries.
 
-Existing `from tracehaven import Client` integrations remain compatible. The product and new package name are Causelab.
+Installable distribution: `omni-agent-sdk`. Existing `from tracehaven import Client` and `from causelab import Client` integrations remain compatible.

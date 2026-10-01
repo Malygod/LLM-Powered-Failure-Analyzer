@@ -1,5 +1,5 @@
 """Run after installing ./sdk. No model key required; example tool is simulated."""
-from causelab import Client
+from omni import Client
 
 with Client() as client:
     with client.run('KnowledgeAssistant', input='Can I export logs older than 30 days?',

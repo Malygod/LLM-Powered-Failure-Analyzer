@@ -2545,3 +2545,19 @@ footer {
 .terminal-separator {
   color: #57534e;
 }
+
+/* OMNI: a quiet, widely spaced wordmark beside the all-seeing eye. */
+.sidebar .brand {
+  gap: 13px;
+}
+.sidebar .brand-wordmark {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1;
+}
+@media (max-width: 800px) {
+  .sidebar .brand-wordmark {
+    font-size: 22px;
+  }
+}

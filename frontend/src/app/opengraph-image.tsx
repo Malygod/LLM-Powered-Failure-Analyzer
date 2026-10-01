@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
-export const alt =
-  "Causelab — Understand agent failures. Test better behavior.";
+export const alt = "OMNI — Understand agent failures. Test better behavior.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export default function Image() {
@@ -22,27 +21,40 @@ export default function Image() {
           display: "flex",
           alignItems: "center",
           gap: 20,
-          fontSize: 34,
+          fontSize: 36,
+          letterSpacing: "0.16em",
           color: "#f5f5f4",
         }}
       >
-        <svg width="60" height="60" viewBox="0 0 48 48" fill="none">
+        <svg width="76" height="76" viewBox="0 0 64 64">
           <path
-            d="M34 13H21a11 11 0 0 0 0 22h13"
+            d="M8 34c6-9 14-14 24-14s18 5 24 14c-6 9-14 14-24 14S14 43 8 34Z"
+            fill="none"
             stroke="#f5f5f4"
-            strokeWidth="2.8"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+          <path d="M17 34h30" fill="none" stroke="#8c817b" strokeWidth="1.5" />
+          <circle
+            cx="32"
+            cy="34"
+            r="9"
+            fill="#171412"
+            stroke="#f5f5f4"
+            strokeWidth="2"
+          />
+          <circle cx="32" cy="34" r="3.5" fill="#e66b60" />
+          <circle cx="17" cy="34" r="2.4" fill="#f5f5f4" />
+          <circle cx="47" cy="34" r="2.4" fill="#f5f5f4" />
+          <path
+            d="M22 12c6-3 14-3 20 0"
+            fill="none"
+            stroke="#e66b60"
+            strokeWidth="2"
             strokeLinecap="round"
           />
-          <path
-            d="M14 24h9l5-7h6M23 24l5 7h6"
-            stroke="#8c817b"
-            strokeWidth="1.6"
-          />
-          <circle cx="34" cy="17" r="3.3" fill="#ef665b" />
-          <circle cx="34" cy="31" r="3.3" fill="#69ba90" />
-          <circle cx="14" cy="24" r="2.3" fill="#f5f5f4" />
         </svg>
-        causelab.
+        OMNI
       </div>
       <div
         style={{

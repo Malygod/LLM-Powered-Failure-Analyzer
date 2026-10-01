@@ -22,11 +22,9 @@ export function Shell({
         Skip to content
       </a>
       <header className="sidebar">
-        <Link className="brand" href="/demo" aria-label="Causelab home">
-          <Image src="/causelab.svg" width={42} height={42} alt="" />
-          <span>
-            causelab<span className="brand-dot">.</span>
-          </span>
+        <Link className="brand" href="/demo" aria-label="OMNI home">
+          <Image src="/omni.svg" width={48} height={48} alt="" />
+          <span className="brand-wordmark">OMNI</span>
         </Link>
         <nav aria-label="Main navigation">
           <Link
@@ -78,7 +76,7 @@ export function Shell({
         </header>
         <main id="main">{children}</main>
         <footer>
-          Causelab <span>Applied AI engineering · Matías Sepúlveda</span>
+          OMNI <span>Applied AI engineering · Matías Sepúlveda</span>
           <Link href="/about">About this demo ↗</Link>
         </footer>
       </div>

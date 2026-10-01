@@ -50,7 +50,7 @@ export function EvaluationReport({
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = "causelab-investigation.json";
+    a.download = "omni-investigation.json";
     a.click();
     URL.revokeObjectURL(url);
   }

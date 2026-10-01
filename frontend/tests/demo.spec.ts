@@ -33,9 +33,7 @@ test("three-minute walkthrough works without backend", async ({ page }) => {
   ).toBeVisible();
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export report" }).click();
-  expect((await download).suggestedFilename()).toBe(
-    "causelab-investigation.json",
-  );
+  expect((await download).suggestedFilename()).toBe("omni-investigation.json");
   await page.getByRole("button", { name: "retrieve", exact: true }).click();
   await expect(page.locator(".inspector-heading h3")).toHaveText(
     "Retrieve knowledge",

@@ -1,4 +1,4 @@
-name: Causelab checks
+name: OMNI checks
 on: [push, pull_request]
 jobs:
   backend:

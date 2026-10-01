@@ -1,6 +1,6 @@
-# Causelab interface
+# OMNI interface
 
-Next.js / React / TypeScript frontend for the Causelab reliability prototype.
+Next.js / React / TypeScript frontend for the OMNI reliability prototype.
 
 ```sh
 npm ci

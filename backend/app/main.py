@@ -7,7 +7,7 @@ from app import models, schemas, crud, database
 from app.config import settings
 from app.jobs import enqueue
 
-app = FastAPI(title="Causelab API", version="2.0.0")
+app = FastAPI(title="OMNI API", version="2.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=settings.allowed_origins,
                   allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -26,7 +26,7 @@ def health_check(db: Session = Depends(database.get_db)):
             raise RuntimeError('Migration required')
     except Exception:
         raise HTTPException(503, 'Database unavailable or migrations pending')
-    return {"status": "healthy", "service": "Causelab API"}
+    return {"status": "healthy", "service": "OMNI API"}
 
 
 @app.post('/api/ingest', dependencies=[Depends(live_access)])

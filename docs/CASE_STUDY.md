@@ -1,8 +1,8 @@
-# Causelab: turning an apparently successful run into a testable failure
+# OMNI: turning an apparently successful run into a testable failure
 
 ## Problem and contribution
 
-A knowledge assistant can finish its tools and return a fluent answer while still misleading the user. An execution-success dashboard hides this failure. Causelab connects the answer to its retrieval evidence, checks it against a fixed benchmark, and gives a developer a reviewable repair proposal.
+A knowledge assistant can finish its tools and return a fluent answer while still misleading the user. An execution-success dashboard hides this failure. OMNI connects the answer to its retrieval evidence, checks it against a fixed benchmark, and gives a developer a reviewable repair proposal.
 
 Matías Sepúlveda's prototype supplied FastAPI trace ingestion, SQLAlchemy relationships, version comparison and synchronous LLM diagnostics. This iteration, developed with AI coding assistance, adds a recruiter walkthrough, trace timing and hierarchy, a Python SDK, test-set evaluation, persistent investigation jobs, schema migrations and explicit simulation boundaries.
 
@@ -67,4 +67,4 @@ Start with the interactive trace and its failed checks, then inspect the SDK, mi
 
 ## Visual identity
 
-Causelab uses the warm stone surfaces, charcoal trace panels, restrained red accents, and typography of [Matías’s portfolio](https://malygod.netlify.app/). The original SVG mark combines a C with a branching trace: a failed path and a successful path. The public demo remains recorded, and the previous `tracehaven` SDK import and existing database identifiers remain compatible.
+OMNI uses the warm stone surfaces, charcoal trace panels, restrained red accents, and typography of [Matías’s portfolio](https://malygod.netlify.app/). The original SVG mark combines an all-seeing eye, a halo, and three connected trace nodes. OMNI expresses a complete view of agent behavior; the restrained geometry keeps the identity readable at small sizes. The public demo remains recorded, and the previous `tracehaven` SDK import and existing database identifiers remain compatible.

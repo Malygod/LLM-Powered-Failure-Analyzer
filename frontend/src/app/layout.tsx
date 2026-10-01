@@ -6,14 +6,14 @@ export const metadata: Metadata = {
       "https://llm-powered-failure-analyzer.vercel.app",
   ),
   title: {
-    default: "Causelab — Understand agent failures",
-    template: "%s · Causelab",
+    default: "OMNI — Understand agent failures",
+    template: "%s · OMNI",
   },
   description:
     "Inspect agent traces, investigate failures, and test better behavior. An independent AI engineering project by Matías Sepúlveda.",
-  icons: { icon: "/causelab.svg" },
+  icons: { icon: "/omni.svg" },
   openGraph: {
-    title: "Causelab — Understand agent failures. Test better behavior.",
+    title: "OMNI — Understand agent failures. Test better behavior.",
     description: "A three-minute interactive AI reliability demo.",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },

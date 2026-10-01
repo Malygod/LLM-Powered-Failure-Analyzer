@@ -1,8 +1,8 @@
-# Causelab walkthrough
+# OMNI walkthrough
 
 Silent browser capture: `frontend/public/walkthrough.webm`. The interface contains its own labels; use the following short narration when recording a personal application video.
 
-1. **Dashboard:** “This is Causelab, my AI reliability prototype. The public demo is recorded and simulated, so you can inspect it without an account.”
+1. **Dashboard:** “This is OMNI, my AI reliability prototype. The public demo is recorded and simulated, so you can inspect it without an account.”
 2. **Featured trace:** “The interesting failure is a run that succeeds technically but gives an unsupported answer. Here, retrieval returned the overview and missed the archive policy.”
 3. **Inspector:** “Each step includes its timing, inputs, outputs, tool arguments, and evidence. Quality checks are separate from execution status.”
 4. **Investigation:** “The proposed repair retrieves more evidence and abstains when it cannot verify a claim. The local live mode uses a bounded model-backed investigator; this example is explicitly recorded.”
